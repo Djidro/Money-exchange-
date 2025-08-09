@@ -3,168 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oman to Rwanda Money Transfer</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Money Transfer Service</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Oman-Rwanda Transfer</h1>
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="home">Home</button>
-                <button class="tab-btn" data-tab="history">History</button>
-                <button class="tab-btn" data-tab="settings">Settings</button>
-                <button class="tab-btn" data-tab="admin">Admin</button>
-            </div>
-        </header>
+    <header>
+        <h1>FastMoney Transfer</h1>
+        <nav>
+            <button id="homeBtn" class="active">New Transfer</button>
+            <button id="historyBtn">Transaction History</button>
+            <button id="adminBtn">Admin Login</button>
+        </nav>
+    </header>
 
-        <main>
-            <!-- Home Tab -->
-            <div id="home" class="tab-content active">
-                <form id="transferForm">
-                    <h2>New Transfer</h2>
-                    <div class="form-group">
-                        <label for="senderName">Your Name</label>
-                        <input type="text" id="senderName" required>
+    <main>
+        <!-- Home/Transfer Section -->
+        <section id="transferSection" class="active-section">
+            <h2>Send Money</h2>
+            <form id="transferForm">
+                <div class="form-group">
+                    <h3>Sender Details</h3>
+                    <label for="senderName">Full Name</label>
+                    <input type="text" id="senderName" required>
+                    
+                    <label for="senderEmail">Email</label>
+                    <input type="email" id="senderEmail" required>
+                    
+                    <label for="amount">Amount to Send (OMR)</label>
+                    <input type="number" id="amount" min="1" step="0.01" required>
+                    
+                    <div class="rate-display">
+                        <p>Current Rate: 1 OMR = <span id="currentRate">3600</span> RWF</p>
+                        <p>Receiver will get: <span id="receiverAmount">0</span> RWF</p>
+                        <p>Transfer Fee: 2 OMR</p>
+                        <p>Total to Pay: <span id="totalAmount">0</span> OMR</p>
                     </div>
-                    <div class="form-group">
-                        <label for="senderEmail">Your Email</label>
-                        <input type="email" id="senderEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="recipientName">Recipient Name</label>
-                        <input type="text" id="recipientName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="amount">Amount (OMR)</label>
-                        <input type="number" id="amount" min="1" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="method">Transfer Method</label>
-                        <select id="method" required>
-                            <option value="">Select method</option>
-                            <option value="mtn">MTN Money</option>
-                            <option value="airtel">Airtel Money</option>
-                            <option value="bank">Bank Transfer</option>
-                        </select>
-                    </div>
-                    <div id="bankDetails" class="hidden">
-                        <div class="form-group">
-                            <label for="bankName">Bank Name</label>
-                            <input type="text" id="bankName">
-                        </div>
-                        <div class="form-group">
-                            <label for="accountNumber">Account Number</label>
-                            <input type="text" id="accountNumber">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Country</label>
-                        <input type="text" value="Rwanda" disabled>
-                    </div>
-                    <div class="summary">
-                        <p>Fee: <span id="fee">2</span> OMR</p>
-                        <p>Total: <span id="total">0</span> OMR</p>
-                        <p>Recipient gets: <span id="rwfAmount">0</span> RWF</p>
-                    </div>
-                    <button type="submit" class="btn">Submit Transfer</button>
-                </form>
-
-                <div id="paymentInstructions" class="hidden">
-                    <h2>Payment Instructions</h2>
-                    <p>Please transfer <span id="totalToPay">0</span> OMR to:</p>
-                    <p><strong>Ahli Islamic Bank</strong></p>
-                    <p>Account: 0204060924001</p>
-                    <img src="assets/qr-code.png.PNG" alt="QR Code" class="qr-code">
-                    <p>After payment, send the receipt to our WhatsApp for confirmation.</p>
-                    <button id="whatsappBtn" class="btn whatsapp-btn">
-                        <i class="fab fa-whatsapp"></i> Notify Admin via WhatsApp
-                    </button>
-                    <button id="newTransferBtn" class="btn secondary-btn">New Transfer</button>
                 </div>
-            </div>
 
-            <!-- History Tab -->
-            <div id="history" class="tab-content">
-                <h2>Transfer History</h2>
-                <div class="history-controls">
-                    <button id="clearHistory" class="btn secondary-btn">Clear History</button>
+                <div class="form-group">
+                    <h3>Transfer Method</h3>
+                    <select id="transferMethod" required>
+                        <option value="">Select Method</option>
+                        <option value="mtn">MTN Mobile Money</option>
+                        <option value="airtel">Airtel Money</option>
+                        <option value="bank">Bank Transfer</option>
+                    </select>
                 </div>
-                <table id="historyTable">
+
+                <div id="receiverDetails" class="form-group hidden">
+                    <h3>Receiver Details</h3>
+                    <div id="mobileMoneyFields" class="hidden">
+                        <label for="receiverName">Receiver Full Name</label>
+                        <input type="text" id="receiverName">
+                        
+                        <label for="receiverPhone">Contact Number</label>
+                        <input type="tel" id="receiverPhone">
+                    </div>
+                    
+                    <div id="bankFields" class="hidden">
+                        <label for="bankName">Bank Name</label>
+                        <input type="text" id="bankName">
+                        
+                        <label for="accountNumber">Account Number</label>
+                        <input type="text" id="accountNumber">
+                        
+                        <label for="accountHolder">Account Holder Name</label>
+                        <input type="text" id="accountHolder">
+                    </div>
+                </div>
+
+                <div id="paymentInstructions" class="form-group hidden">
+                    <h3>Payment Instructions</h3>
+                    <p>Please transfer <strong><span id="paymentAmount">0</span> OMR</strong> to our bank account:</p>
+                    <p class="bank-account">Bank: International Bank<br>
+                    Account Name: FastMoney Transfers<br>
+                    Account Number: <strong>OM1234567890</strong></p>
+                    
+                    <div class="help-section">
+                        <h4>Help & More Info</h4>
+                        <p>1. Complete the transfer to our bank account</p>
+                        <p>2. Keep the transaction reference</p>
+                        <p>3. We'll process your transfer within 1 hour</p>
+                        <p>4. Receiver will get funds directly to their account</p>
+                    </div>
+                    
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="paymentConfirmed" required>
+                        <span class="checkmark"></span>
+                        I confirm I have made the payment
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn" disabled>Complete Transfer</button>
+            </form>
+        </section>
+
+        <!-- History Section -->
+        <section id="historySection" class="hidden-section">
+            <h2>Transaction History</h2>
+            <div class="history-container">
+                <table id="transactionTable">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Recipient</th>
+                            <th>Receiver</th>
                             <th>Amount (OMR)</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Filled by JavaScript -->
+                        <!-- Transactions will be added here by JavaScript -->
                     </tbody>
                 </table>
             </div>
+        </section>
 
-            <!-- Settings Tab -->
-            <div id="settings" class="tab-content">
-                <h2>Settings</h2>
+        <!-- Admin Section -->
+        <section id="adminSection" class="hidden-section">
+            <h2>Admin Login</h2>
+            <form id="adminForm">
                 <div class="form-group">
-                    <label>Exchange Rate (1 OMR = RWF)</label>
-                    <input type="number" id="exchangeRate" value="3600" disabled>
-                </div>
-                <div class="form-group">
-                    <label for="adminWhatsApp">Admin WhatsApp Number</label>
-                    <input type="text" id="adminWhatsApp" value="+96878440900">
-                </div>
-                <div class="form-group">
-                    <label for="bankAccount">Bank Account Number</label>
-                    <input type="text" id="bankAccount" value="0204060924001">
-                </div>
-                <div class="form-group">
-                    <label>Theme</label>
-                    <div class="theme-switch">
-                        <button id="lightTheme" class="btn">Light</button>
-                        <button id="darkTheme" class="btn">Dark</button>
-                    </div>
-                </div>
-                <button id="saveSettings" class="btn">Save Settings</button>
-            </div>
-
-            <!-- Admin Tab -->
-            <div id="admin" class="tab-content">
-                <h2>Admin Panel</h2>
-                <div class="form-group">
+                    <label for="adminUsername">Username</label>
+                    <input type="text" id="adminUsername" required>
+                    
                     <label for="adminPassword">Password</label>
-                    <input type="password" id="adminPassword">
+                    <input type="password" id="adminPassword" required>
+                    
+                    <button type="submit">Login</button>
                 </div>
-                <button id="adminLogin" class="btn">Login</button>
-                <div id="adminContent" class="hidden">
-                    <h3>All Transfers</h3>
-                    <table id="adminTable">
+            </form>
+
+            <div id="adminPanel" class="hidden">
+                <h3>Admin Panel</h3>
+                <div class="admin-actions">
+                    <div class="form-group">
+                        <label for="newRate">Update Exchange Rate (1 OMR = ? RWF)</label>
+                        <input type="number" id="newRate" min="1" value="3600">
+                        <button id="updateRateBtn">Update Rate</button>
+                    </div>
+                    
+                    <h4>Recent Transactions</h4>
+                    <table id="adminTransactionTable">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Sender</th>
-                                <th>Recipient</th>
+                                <th>Receiver</th>
                                 <th>Amount</th>
                                 <th>Method</th>
-                                <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Filled by JavaScript -->
+                            <!-- Admin transactions will be added here by JavaScript -->
                         </tbody>
                     </table>
-                    <div class="admin-actions">
-                        <button id="updateRates" class="btn">Update Exchange Rates</button>
-                        <button id="exportData" class="btn">Export All Data</button>
-                    </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2023 FastMoney Transfer Service. All rights reserved.</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
