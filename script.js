@@ -1,276 +1,322 @@
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
+    const homeBtn = document.getElementById('homeBtn');
+    const historyBtn = document.getElementById('historyBtn');
+    const adminBtn = document.getElementById('adminBtn');
+    const transferSection = document.getElementById('transferSection');
+    const historySection = document.getElementById('historySection');
+    const adminSection = document.getElementById('adminSection');
     const transferForm = document.getElementById('transferForm');
-    const paymentInstructions = document.getElementById('paymentInstructions');
-    const whatsappBtn = document.getElementById('whatsappBtn');
-    const newTransferBtn = document.getElementById('newTransferBtn');
-    const methodSelect = document.getElementById('method');
-    const bankDetails = document.getElementById('bankDetails');
+    const adminForm = document.getElementById('adminForm');
+    const adminPanel = document.getElementById('adminPanel');
     const amountInput = document.getElementById('amount');
-    const feeElement = document.getElementById('fee');
-    const totalElement = document.getElementById('total');
-    const rwfAmountElement = document.getElementById('rwfAmount');
-    const totalToPayElement = document.getElementById('totalToPay');
-    const historyTable = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
-    const clearHistoryBtn = document.getElementById('clearHistory');
-    const adminWhatsApp = document.getElementById('adminWhatsApp');
-    const bankAccount = document.getElementById('bankAccount');
-    const exchangeRate = document.getElementById('exchangeRate');
-    const saveSettingsBtn = document.getElementById('saveSettings');
-    const lightThemeBtn = document.getElementById('lightTheme');
-    const darkThemeBtn = document.getElementById('darkTheme');
-    const adminPassword = document.getElementById('adminPassword');
-    const adminLoginBtn = document.getElementById('adminLogin');
-    const adminContent = document.getElementById('adminContent');
-    const adminTable = document.getElementById('adminTable').getElementsByTagName('tbody')[0];
-    
-    // Tab functionality
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabId = btn.getAttribute('data-tab');
-            
-            // Update active tab button
-            tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            // Show active tab content
-            tabContents.forEach(content => content.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            
-            // Refresh history table when history tab is clicked
-            if (tabId === 'history') {
-                loadHistory();
+    const transferMethod = document.getElementById('transferMethod');
+    const receiverDetails = document.getElementById('receiverDetails');
+    const mobileMoneyFields = document.getElementById('mobileMoneyFields');
+    const bankFields = document.getElementById('bankFields');
+    const paymentInstructions = document.getElementById('paymentInstructions');
+    const paymentConfirmed = document.getElementById('paymentConfirmed');
+    const submitBtn = document.getElementById('submitBtn');
+    const receiverAmount = document.getElementById('receiverAmount');
+    const totalAmount = document.getElementById('totalAmount');
+    const paymentAmount = document.getElementById('paymentAmount');
+    const currentRate = document.getElementById('currentRate');
+    const updateRateBtn = document.getElementById('updateRateBtn');
+    const newRate = document.getElementById('newRate');
+    const transactionTable = document.getElementById('transactionTable').getElementsByTagName('tbody')[0];
+    const adminTransactionTable = document.getElementById('adminTransactionTable').getElementsByTagName('tbody')[0];
+
+    // State
+    let exchangeRate = 3600; // Default rate: 1 OMR = 3600 RWF
+    const transferFee = 2; // Fixed fee in OMR
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    let adminTransactions = JSON.parse(localStorage.getItem('adminTransactions')) || [];
+    const adminCredentials = { username: "admin", password: "admin123" };
+    const whatsappNumber = "+96878440900"; // Your WhatsApp number
+
+    // Initialize
+    loadSavedRate();
+    updateRateDisplay();
+    loadTransactionHistory();
+    loadAdminTransactionHistory();
+    startRatePolling(); // Begin checking for rate updates
+
+    // Navigation
+    homeBtn.addEventListener('click', () => showSection('transfer'));
+    historyBtn.addEventListener('click', () => showSection('history'));
+    adminBtn.addEventListener('click', () => showSection('admin'));
+
+    function showSection(section) {
+        homeBtn.classList.remove('active');
+        historyBtn.classList.remove('active');
+        adminBtn.classList.remove('active');
+        
+        transferSection.classList.remove('active-section');
+        historySection.classList.remove('active-section');
+        adminSection.classList.remove('active-section');
+        
+        if (section === 'transfer') {
+            homeBtn.classList.add('active');
+            transferSection.classList.add('active-section');
+        } else if (section === 'history') {
+            historyBtn.classList.add('active');
+            historySection.classList.add('active-section');
+        } else if (section === 'admin') {
+            adminBtn.classList.add('active');
+            adminSection.classList.add('active-section');
+        }
+    }
+
+    // Rate Management
+    function loadSavedRate() {
+        const savedRate = localStorage.getItem('exchangeRate');
+        if (savedRate) {
+            exchangeRate = parseFloat(savedRate);
+            currentRate.textContent = exchangeRate;
+            newRate.value = exchangeRate;
+        }
+    }
+
+    function startRatePolling() {
+        // Check for rate changes every 3 seconds
+        setInterval(() => {
+            const savedRate = localStorage.getItem('exchangeRate');
+            if (savedRate && parseFloat(savedRate) !== exchangeRate) {
+                exchangeRate = parseFloat(savedRate);
+                currentRate.textContent = exchangeRate;
+                newRate.value = exchangeRate;
+                updateRateDisplay(); // Update calculations if amount is entered
             }
-        });
-    });
+        }, 3000);
+    }
+
+    // Transfer Form Logic
+    amountInput.addEventListener('input', updateRateDisplay);
     
-    // Transfer method change
-    methodSelect.addEventListener('change', function() {
-        if (this.value === 'bank') {
-            bankDetails.classList.remove('hidden');
+    transferMethod.addEventListener('change', function() {
+        const method = this.value;
+        receiverDetails.classList.remove('hidden');
+        
+        if (method === 'mtn' || method === 'airtel') {
+            mobileMoneyFields.classList.remove('hidden');
+            bankFields.classList.add('hidden');
+        } else if (method === 'bank') {
+            bankFields.classList.remove('hidden');
+            mobileMoneyFields.classList.add('hidden');
         } else {
-            bankDetails.classList.add('hidden');
+            receiverDetails.classList.add('hidden');
         }
     });
-    
-    // Amount calculation
-    amountInput.addEventListener('input', calculateAmounts);
-    
-    function calculateAmounts() {
-        const amount = parseFloat(amountInput.value) || 0;
-        const fee = 2; // Fixed fee of 2 OMR
-        const total = amount + fee;
-        const rate = parseFloat(exchangeRate.value) || 3600;
-        const rwfAmount = amount * rate;
-        
-        feeElement.textContent = fee.toFixed(2);
-        totalElement.textContent = total.toFixed(2);
-        rwfAmountElement.textContent = rwfAmount.toLocaleString();
-    }
-    
-    // Form submission
+
+    paymentConfirmed.addEventListener('change', function() {
+        submitBtn.disabled = !this.checked;
+    });
+
     transferForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Get form values
         const senderName = document.getElementById('senderName').value;
         const senderEmail = document.getElementById('senderEmail').value;
-        const recipientName = document.getElementById('recipientName').value;
-        const amount = parseFloat(amountInput.value);
-        const method = methodSelect.value;
-        const bankName = document.getElementById('bankName')?.value || '';
-        const accountNumber = document.getElementById('accountNumber')?.value || '';
-        const fee = 2;
-        const total = amount + fee;
-        const rate = parseFloat(exchangeRate.value) || 3600;
-        const rwfAmount = amount * rate;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const method = document.getElementById('transferMethod').value;
+        const receiverName = method === 'bank' ? 
+            document.getElementById('accountHolder').value : 
+            document.getElementById('receiverName').value;
+        const receiverContact = method === 'bank' ? 
+            '' : document.getElementById('receiverPhone').value;
+        const bankName = method === 'bank' ? document.getElementById('bankName').value : '';
+        const accountNumber = method === 'bank' ? document.getElementById('accountNumber').value : '';
         
-        // Create transfer object
-        const transfer = {
+        // Create transaction
+        const transaction = {
             id: Date.now(),
             date: new Date().toLocaleString(),
             senderName,
             senderEmail,
-            recipientName,
             amount,
+            fee: transferFee,
+            total: amount + transferFee,
             method,
+            receiverName,
+            receiverContact,
             bankName,
             accountNumber,
-            fee,
-            total,
-            rwfAmount,
             status: 'Pending',
-            reference: 'TR-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+            rate: exchangeRate,
+            receivedAmount: amount * exchangeRate
         };
         
-        // Save to history
-        saveTransfer(transfer);
+        // Save transaction
+        transactions.push(transaction);
+        adminTransactions.push(transaction);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        localStorage.setItem('adminTransactions', JSON.stringify(adminTransactions));
         
-        // Show payment instructions
-        totalToPayElement.textContent = total.toFixed(2);
-        transferForm.classList.add('hidden');
-        paymentInstructions.classList.remove('hidden');
+        // Send WhatsApp notification
+        sendWhatsAppNotification(transaction);
         
-        // Send email (simulated)
-        sendEmailReceipt(transfer);
+        // Complete form reset
+        resetTransferForm();
+        
+        // Update history
+        loadTransactionHistory();
+        loadAdminTransactionHistory();
+        
+        alert('Transfer submitted successfully! We will process it once payment is confirmed.');
     });
-    
-    // New transfer button
-    newTransferBtn.addEventListener('click', function() {
+
+    function resetTransferForm() {
         transferForm.reset();
+        receiverDetails.classList.add('hidden');
+        mobileMoneyFields.classList.add('hidden');
+        bankFields.classList.add('hidden');
         paymentInstructions.classList.add('hidden');
-        transferForm.classList.remove('hidden');
-        bankDetails.classList.add('hidden');
-    });
-    
-    // WhatsApp button
-    whatsappBtn.addEventListener('click', function() {
-        const transfer = getLastTransfer();
-        if (transfer) {
-            const whatsappNumber = adminWhatsApp.value || '+96878440900';
-            const message = `New Transfer Request%0A%0A` +
-                           `Sender: ${transfer.senderName}%0A` +
-                           `Amount: ${transfer.amount} OMR%0A` +
-                           `Recipient: ${transfer.recipientName}%0A` +
-                           `Method: ${transfer.method.toUpperCase()}%0A` +
-                           `Total to collect: ${transfer.total} OMR%0A` +
-                           `Reference: ${transfer.reference}`;
-            
-            window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-        }
-    });
-    
-    // History functions
-    function saveTransfer(transfer) {
-        let history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
-        history.push(transfer);
-        localStorage.setItem('transferHistory', JSON.stringify(history));
+        submitBtn.disabled = true;
+        paymentConfirmed.checked = false;
+        transferMethod.selectedIndex = 0;
+        receiverAmount.textContent = '0';
+        totalAmount.textContent = '0';
+        paymentAmount.textContent = '0';
     }
-    
-    function getLastTransfer() {
-        const history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
-        return history.length > 0 ? history[history.length - 1] : null;
-    }
-    
-    function loadHistory() {
-        const history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
-        historyTable.innerHTML = '';
+
+    // Admin Functions
+    adminForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        history.forEach(transfer => {
-            const row = historyTable.insertRow();
-            row.innerHTML = `
-                <td>${transfer.date}</td>
-                <td>${transfer.recipientName}</td>
-                <td>${transfer.amount.toFixed(2)}</td>
-                <td>${transfer.status}</td>
-            `;
-        });
-    }
-    
-    // Clear history
-    clearHistoryBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear all history?')) {
-            localStorage.removeItem('transferHistory');
-            loadHistory();
-        }
-    });
-    
-    // Settings
-    saveSettingsBtn.addEventListener('click', function() {
-        localStorage.setItem('adminWhatsApp', adminWhatsApp.value);
-        localStorage.setItem('bankAccount', bankAccount.value);
-        alert('Settings saved!');
-    });
-    
-    // Load saved settings
-    function loadSettings() {
-        adminWhatsApp.value = localStorage.getItem('adminWhatsApp') || '+96878440900';
-        bankAccount.value = localStorage.getItem('bankAccount') || '0204060924001';
-    }
-    
-    // Theme switcher
-    lightThemeBtn.addEventListener('click', function() {
-        document.body.classList.remove('dark-mode');
-        localStorage.setItem('theme', 'light');
-    });
-    
-    darkThemeBtn.addEventListener('click', function() {
-        document.body.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-    });
-    
-    // Load theme preference
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-    
-    // Admin login
-    adminLoginBtn.addEventListener('click', function() {
-        // In a real app, use proper authentication
-        if (adminPassword.value === 'admin123') {
-            adminContent.classList.remove('hidden');
-            loadAdminData();
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+        
+        if (username === adminCredentials.username && password === adminCredentials.password) {
+            adminPanel.classList.remove('hidden');
+            this.reset();
         } else {
-            alert('Incorrect password');
+            alert('Invalid credentials');
         }
     });
-    
-    // Load admin data
-    function loadAdminData() {
-        const history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
-        adminTable.innerHTML = '';
+
+    updateRateBtn.addEventListener('click', function() {
+        const rate = parseFloat(newRate.value);
+        if (rate && rate > 0) {
+            exchangeRate = rate;
+            currentRate.textContent = rate;
+            localStorage.setItem('exchangeRate', rate.toString());
+            alert('Exchange rate updated successfully! All users will see this new rate.');
+        } else {
+            alert('Please enter a valid rate');
+        }
+    });
+
+    // Helper Functions
+    function updateRateDisplay() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const total = amount + transferFee;
         
-        history.forEach(transfer => {
-            const row = adminTable.insertRow();
-            row.innerHTML = `
-                <td>${transfer.date}</td>
-                <td>${transfer.senderName}</td>
-                <td>${transfer.recipientName}</td>
-                <td>${transfer.amount.toFixed(2)} OMR</td>
-                <td>${transfer.method.toUpperCase()}</td>
-                <td>${transfer.status}</td>
-                <td>
-                    <button class="btn small-btn complete-btn" data-id="${transfer.id}">Complete</button>
-                </td>
-            `;
-        });
+        receiverAmount.textContent = (amount * exchangeRate).toLocaleString();
+        totalAmount.textContent = total.toFixed(2);
+        paymentAmount.textContent = total.toFixed(2);
         
-        // Add event listeners to complete buttons
-        document.querySelectorAll('.complete-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                completeTransfer(id);
-            });
-        });
+        if (amount > 0) {
+            paymentInstructions.classList.remove('hidden');
+        } else {
+            paymentInstructions.classList.add('hidden');
+        }
     }
-    
-    // Complete transfer
-    function completeTransfer(id) {
-        let history = JSON.parse(localStorage.getItem('transferHistory') || '[]');
-        history = history.map(transfer => {
-            if (transfer.id === id) {
-                return {...transfer, status: 'Completed'};
+
+    function loadTransactionHistory() {
+        transactionTable.innerHTML = '';
+        
+        if (transactions.length === 0) {
+            const row = transactionTable.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 4;
+            cell.textContent = 'No transactions found';
+            cell.style.textAlign = 'center';
+            return;
+        }
+        
+        transactions.forEach(transaction => {
+            const row = transactionTable.insertRow();
+            row.insertCell(0).textContent = transaction.date;
+            row.insertCell(1).textContent = transaction.receiverName;
+            row.insertCell(2).textContent = transaction.amount.toFixed(2);
+            
+            const statusCell = row.insertCell(3);
+            statusCell.textContent = transaction.status;
+            
+            if (transaction.status === 'Completed') {
+                statusCell.style.color = '#2ecc71';
+            } else if (transaction.status === 'Pending') {
+                statusCell.style.color = '#f39c12';
+            } else {
+                statusCell.style.color = '#e74c3c';
             }
-            return transfer;
         });
+    }
+
+    function loadAdminTransactionHistory() {
+        adminTransactionTable.innerHTML = '';
         
-        localStorage.setItem('transferHistory', JSON.stringify(history));
-        loadAdminData();
+        if (adminTransactions.length === 0) {
+            const row = adminTransactionTable.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 5;
+            cell.textContent = 'No transactions found';
+            cell.style.textAlign = 'center';
+            return;
+        }
+        
+        adminTransactions.forEach(transaction => {
+            const row = adminTransactionTable.insertRow();
+            row.insertCell(0).textContent = transaction.date;
+            row.insertCell(1).textContent = transaction.senderName;
+            row.insertCell(2).textContent = transaction.receiverName;
+            row.insertCell(3).textContent = transaction.amount.toFixed(2);
+            
+            let methodText = '';
+            if (transaction.method === 'mtn') methodText = 'MTN Mobile';
+            else if (transaction.method === 'airtel') methodText = 'Airtel Money';
+            else methodText = 'Bank Transfer';
+            
+            row.insertCell(4).textContent = methodText;
+        });
     }
-    
-    // Simulated email function
-    function sendEmailReceipt(transfer) {
-        // In a real app, you would use an email service API
-        console.log('Email sent to:', transfer.senderEmail);
-        console.log('Transfer details:', transfer);
+
+    function sendWhatsAppNotification(transaction) {
+        const formattedDate = new Date(transaction.date).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).replace(',', '');
+
+        const message = `💰 *Money Transfer Notification* 
+        
+*Sender Details:*
+   - Name: ${transaction.senderName}
+   - Email: ${transaction.senderEmail}
+   
+💸 *Transaction Details:*
+   - Amount Sent: ${transaction.amount} OMR
+   - Exchange Rate: 1 OMR = ${transaction.rate} RWF
+   - Amount Received: ${transaction.receivedAmount.toLocaleString()} RWF
+   - Transfer Fee: ${transaction.fee} OMR
+   - Total Paid: ${transaction.total} OMR
+   
+*Receiver Details:*
+   - Name: ${transaction.receiverName}
+   ${transaction.method === 'bank' ? 
+     `- Bank: ${transaction.bankName}\n   - Account: ${transaction.accountNumber}` : 
+     `   - Phone: ${transaction.receiverContact}\n   - Method: ${transaction.method === 'mtn' ? 'MTN Mobile Money' : 'Airtel Money'}`}
+   
+📅 Transaction Date: ${formattedDate}`;
+
+        const formattedPhone = whatsappNumber.replace(/\D/g, '');
+        const encodedMessage = encodeURIComponent(message.trim());
+        const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+        
+        window.open(whatsappUrl, '_blank');
     }
-    
-    // Initialize
-    calculateAmounts();
-    loadSettings();
-    loadHistory();
 });
