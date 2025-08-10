@@ -3,241 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>East Africa Money Transfer - Fast & Secure</title>
+    <title>Fast & Secure Money Transfers - Oman to East Africa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>East Africa Money Transfer</h1>
-            <nav>
-                <a href="#" id="home-link">Home</a>
-                <a href="#" id="transfer-link">Send Money</a>
-                <a href="#" id="admin-link">Admin</a>
-            </nav>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="btn-secondary" onclick="showHome()">Home</button>
+            <button class="btn-secondary" onclick="showAdmin()">Admin Panel</button>
         </div>
-    </header>
 
-    <main class="container">
-        <!-- Home Section -->
-        <section id="home-section">
-            <div class="hero">
-                <h2>Fast & Secure Money Transfers Across East Africa</h2>
-                <p>We ensure the safest and quickest way to send money to Rwanda, Uganda, Tanzania, Burundi, DRC, and Kenya.</p>
-                <button id="send-money-btn" class="cta-button">Send Money Now</button>
+        <!-- Home Page -->
+        <div id="homePage">
+            <div class="header">
+                <h1>Fast & Secure Money Transfers</h1>
+                <p>Welcome to our money transfer service. We guarantee speed, safety, and the best exchange rates. Send money to your loved ones instantly in Rwanda, Uganda, Tanzania, Burundi, DRC, and Kenya.</p>
+                <button class="btn-primary" onclick="showTransferForm()">Send Money Now</button>
             </div>
 
-            <div class="features">
-                <div class="feature">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Instant Transfers</h3>
-                    <p>Your money arrives in minutes, not days.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Secure Payments</h3>
-                    <p>Bank-level security for all transactions.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-percentage"></i>
-                    <h3>Low Fees</h3>
-                    <p>Only 2 RIAL fixed fee per transfer.</p>
+            <!-- Exchange Rates Display -->
+            <div class="rates-display">
+                <h3>Current Exchange Rates</h3>
+                <div class="rates-grid" id="ratesGrid">
+                    <div class="rate-item">
+                        <div class="country">Rwanda</div>
+                        <div class="rate">1 OMR = <span id="rate-rwanda">3600</span> RWF</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="country">Uganda</div>
+                        <div class="rate">1 OMR = <span id="rate-uganda">900</span> UGX</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="country">Tanzania</div>
+                        <div class="rate">1 OMR = <span id="rate-tanzania">6200</span> TZS</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="country">Burundi</div>
+                        <div class="rate">1 OMR = <span id="rate-burundi">500</span> BIF</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="country">DRC</div>
+                        <div class="rate">1 OMR = <span id="rate-drc">5000</span> CDF</div>
+                    </div>
+                    <div class="rate-item">
+                        <div class="country">Kenya</div>
+                        <div class="rate">1 OMR = <span id="rate-kenya">350</span> KES</div>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Transfer Form Section -->
-        <section id="transfer-section" class="hidden">
-            <h2>Send Money</h2>
-            <form id="transfer-form">
-                <div class="form-group">
-                    <h3>Sender Details</h3>
-                    <div class="input-group">
-                        <label for="sender-name">Full Name</label>
-                        <input type="text" id="sender-name" required>
+        <!-- Transfer Form -->
+        <div id="transferForm" class="form-container">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Money Transfer Form</h2>
+            
+            <form id="moneyTransferForm" onsubmit="submitTransfer(event)">
+                <div class="form-grid">
+                    <!-- Sender Details -->
+                    <div class="form-section">
+                        <h3>Sender Details</h3>
+                        <div class="form-group">
+                            <label for="senderName">Full Name *</label>
+                            <input type="text" id="senderName" name="senderName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="senderContact">Contact Number *</label>
+                            <input type="tel" id="senderContact" name="senderContact" required>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label for="sender-phone">Contact Number</label>
-                        <input type="tel" id="sender-phone" required>
+
+                    <!-- Transfer Details -->
+                    <div class="form-section">
+                        <h3>Transfer Details</h3>
+                        <div class="form-group">
+                            <label for="country">Destination Country *</label>
+                            <select id="country" name="country" required onchange="updateCalculation()">
+                                <option value="">Select Country</option>
+                                <option value="rwanda">Rwanda</option>
+                                <option value="uganda">Uganda</option>
+                                <option value="tanzania">Tanzania</option>
+                                <option value="burundi">Burundi</option>
+                                <option value="drc">DRC</option>
+                                <option value="kenya">Kenya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method *</label>
+                            <select id="paymentMethod" name="paymentMethod" required onchange="toggleReceiverFields()">
+                                <option value="">Select Payment Method</option>
+                                <option value="simcard">Sim Card</option>
+                                <option value="bank">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount to Send (OMR) *</label>
+                            <input type="number" id="amount" name="amount" step="0.01" min="1" required onkeyup="updateCalculation()" onchange="updateCalculation()">
+                        </div>
+                        <div id="calculationResult" class="amount-result hidden">
+                            <div class="receive-amount" id="receiveAmount">Receiver will get: 0</div>
+                            <div class="fee-info">Service Fee: 2 OMR | Total to Pay: <span id="totalAmount">0</span> OMR</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <h3>Exchange Rates</h3>
-                    <div class="rates-grid" id="rates-display">
-                        <!-- Rates will be populated by JavaScript -->
-                    </div>
-                </div>
-
-                <div class="form-group">
+                <!-- Receiver Details -->
+                <div class="form-section">
                     <h3>Receiver Details</h3>
-                    <div class="input-group">
-                        <label for="destination">Destination Country</label>
-                        <select id="destination" required>
-                            <option value="">Select Country</option>
-                            <option value="Rwanda">Rwanda 🇷🇼</option>
-                            <option value="Uganda">Uganda 🇺🇬</option>
-                            <option value="Tanzania">Tanzania 🇹🇿</option>
-                            <option value="Burundi">Burundi 🇧🇮</option>
-                            <option value="DRC">DRC 🇨🇩</option>
-                            <option value="Kenya">Kenya 🇰🇪</option>
-                        </select>
+                    
+                    <!-- Sim Card Fields -->
+                    <div id="simCardFields" class="hidden">
+                        <div class="form-group">
+                            <label for="receiverName">Receiver Name *</label>
+                            <input type="text" id="receiverName" name="receiverName">
+                        </div>
+                        <div class="form-group">
+                            <label for="receiverContact">Receiver Contact Number *</label>
+                            <input type="tel" id="receiverContact" name="receiverContact">
+                        </div>
                     </div>
 
-                    <div class="input-group">
-                        <label for="transfer-method">Transfer Method</label>
-                        <select id="transfer-method" required>
-                            <option value="">Select Method</option>
-                            <option value="mobile">Mobile Money</option>
-                            <option value="bank">Bank Transfer</option>
-                        </select>
-                    </div>
-
-                    <div id="receiver-details">
-                        <!-- Dynamic fields will appear here based on transfer method -->
+                    <!-- Bank Fields -->
+                    <div id="bankFields" class="hidden">
+                        <div class="form-group">
+                            <label for="bankName">Bank Name *</label>
+                            <input type="text" id="bankName" name="bankName">
+                        </div>
+                        <div class="form-group">
+                            <label for="bankHolderName">Bank Holder Name *</label>
+                            <input type="text" id="bankHolderName" name="bankHolderName">
+                        </div>
+                        <div class="form-group">
+                            <label for="bankAccountNumber">Bank Account Number *</label>
+                            <input type="text" id="bankAccountNumber" name="bankAccountNumber">
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <h3>Amount</h3>
-                    <div class="input-group">
-                        <label for="amount">Amount to Send (RIAL)</label>
-                        <input type="number" id="amount" min="1" required>
-                    </div>
-                    <div class="calculation">
-                        <p>Fee: <span id="fee">2</span> RIAL (fixed)</p>
-                        <p>Total to Pay: <span id="total">0</span> RIAL</p>
-                        <p>Receiver Gets: <span id="receiver-amount">0</span> <span id="receiver-currency"></span></p>
-                    </div>
+                <!-- Payment Instructions -->
+                <div class="payment-info">
+                    <h4>Payment Instructions</h4>
+                    <p>Please transfer the total amount to our account:</p>
+                    <div class="account-number">0204060924001</div>
+                    <p>After payment, we will process your transfer immediately.</p>
                 </div>
 
-                <button type="submit" class="cta-button">Continue to Payment</button>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn-primary">Submit Transfer Request</button>
+                </div>
             </form>
-        </section>
+        </div>
 
-        <!-- Payment Instructions Section -->
-        <section id="payment-section" class="hidden">
-            <h2>Payment Instructions</h2>
-            <div class="payment-instructions">
-                <p>Please transfer the total amount to:</p>
-                <div class="account-details">
-                    <p><strong>Account Name:</strong> East Africa Transfer</p>
-                    <p><strong>Account Number:</strong> 0204060924001</p>
-                </div>
-                <div class="qr-code-placeholder">
-                    <p>Scan QR Code for quick payment</p>
-                    <div class="qr-code"></div>
-                </div>
-                <button id="confirm-payment" class="cta-button">I Have Paid</button>
-            </div>
-        </section>
-
-        <!-- Confirmation Section -->
-        <section id="confirmation-section" class="hidden">
-            <div class="confirmation-message">
-                <i class="fas fa-check-circle"></i>
-                <h2>Payment Received!</h2>
-                <p>Your transfer is being processed. The receiver will get the funds shortly.</p>
-                <p>A confirmation has been sent to your contact number.</p>
-                <button id="new-transfer" class="cta-button">Send Another Transfer</button>
-            </div>
-        </section>
-
-        <!-- Admin Section -->
-        <section id="admin-section" class="hidden">
-            <h2>Admin Panel</h2>
-            <div id="login-form">
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel">
+            <div id="adminLogin" class="admin-login">
+                <h2>Admin Login</h2>
                 <div class="form-group">
-                    <div class="input-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <button id="login-btn" class="cta-button">Login</button>
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password">
                 </div>
+                <button class="btn-primary" onclick="adminLogin()">Login</button>
             </div>
 
-            <div id="admin-panel" class="hidden">
-                <div class="admin-actions">
+            <div id="adminContent" class="admin-content">
+                <h2>Admin Dashboard</h2>
+                
+                <!-- Exchange Rates Management -->
+                <div class="form-section">
                     <h3>Update Exchange Rates</h3>
-                    <form id="rates-form">
-                        <div class="input-group">
-                            <label for="rwanda-rate">Rwanda (RWF)</label>
-                            <input type="number" id="rwanda-rate" step="0.01" required>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="adminRateRwanda">Rwanda (RWF)</label>
+                            <input type="number" id="adminRateRwanda" step="0.01">
                         </div>
-                        <div class="input-group">
-                            <label for="uganda-rate">Uganda (UGX)</label>
-                            <input type="number" id="uganda-rate" step="0.01" required>
+                        <div class="form-group">
+                            <label for="adminRateUganda">Uganda (UGX)</label>
+                            <input type="number" id="adminRateUganda" step="0.01">
                         </div>
-                        <div class="input-group">
-                            <label for="tanzania-rate">Tanzania (TZS)</label>
-                            <input type="number" id="tanzania-rate" step="0.01" required>
+                        <div class="form-group">
+                            <label for="adminRateTanzania">Tanzania (TZS)</label>
+                            <input type="number" id="adminRateTanzania" step="0.01">
                         </div>
-                        <div class="input-group">
-                            <label for="burundi-rate">Burundi (BIF)</label>
-                            <input type="number" id="burundi-rate" step="0.01" required>
+                        <div class="form-group">
+                            <label for="adminRateBurundi">Burundi (BIF)</label>
+                            <input type="number" id="adminRateBurundi" step="0.01">
                         </div>
-                        <div class="input-group">
-                            <label for="drc-rate">DRC (USD)</label>
-                            <input type="number" id="drc-rate" step="0.01" required>
+                        <div class="form-group">
+                            <label for="adminRateDrc">DRC (CDF)</label>
+                            <input type="number" id="adminRateDrc" step="0.01">
                         </div>
-                        <div class="input-group">
-                            <label for="kenya-rate">Kenya (KES)</label>
-                            <input type="number" id="kenya-rate" step="0.01" required>
+                        <div class="form-group">
+                            <label for="adminRateKenya">Kenya (KES)</label>
+                            <input type="number" id="adminRateKenya" step="0.01">
                         </div>
-                        <button type="submit" class="cta-button">Update Rates</button>
-                    </form>
+                    </div>
+                    <button class="btn-primary" onclick="updateRates()">Update All Rates</button>
                 </div>
 
-                <div class="transactions">
-                    <h3>Transaction History</h3>
-                    <div class="filters">
-                        <select id="status-filter">
-                            <option value="all">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <button id="export-btn" class="cta-button">Export to CSV</button>
-                    </div>
-                    <div class="transactions-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Sender</th>
-                                    <th>Amount</th>
-                                    <th>Destination</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactions-list">
-                                <!-- Transactions will be populated here -->
-                            </tbody>
-                        </table>
+                <!-- Transactions Log -->
+                <div class="form-section">
+                    <h3>Recent Transactions</h3>
+                    <div id="transactionsList">
+                        <p>No transactions yet.</p>
                     </div>
                 </div>
-            </div>
-        </section>
-    </main>
 
-    <footer>
-        <div class="container">
-            <p>© 2023 East Africa Money Transfer. All rights reserved.</p>
-            <div class="contact">
-                <p>Contact: +968 7844 0900</p>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                </div>
+                <button class="btn-secondary" onclick="adminLogout()">Logout</button>
             </div>
         </div>
-    </footer>
+    </div>
 
     <script src="script.js"></script>
 </body>
