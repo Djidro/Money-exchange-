@@ -1,488 +1,487 @@
+// Exchange rates data
+let exchangeRates = {
+    rwanda: 3600,
+    uganda: 900,
+    tanzania: 6200,
+    burundi: 500,
+    drc: 5000,
+    kenya: 350
+};
+
+// Currency codes
+const currencyCodes = {
+    rwanda: 'RWF',
+    uganda: 'UGX',
+    tanzania: 'TZS',
+    burundi: 'BIF',
+    drc: 'CDF',
+    kenya: 'KES'
+};
+
+// Transactions storage
+let transactions = [];
+
+// Admin password (change this for security)
+const ADMIN_PASSWORD = 'admin123';
+
+// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const homeSection = document.getElementById('home-section');
-    const transferSection = document.getElementById('transfer-section');
-    const paymentSection = document.getElementById('payment-section');
-    const confirmationSection = document.getElementById('confirmation-section');
-    const adminSection = document.getElementById('admin-section');
-    const adminPanel = document.getElementById('admin-panel');
-    const loginForm = document.getElementById('login-form');
-    
-    // Navigation Links
-    document.getElementById('home-link').addEventListener('click', showHome);
-    document.getElementById('transfer-link').addEventListener('click', showTransferForm);
-    document.getElementById('admin-link').addEventListener('click', showAdminLogin);
-    document.getElementById('send-money-btn').addEventListener('click', showTransferForm);
-    document.getElementById('new-transfer').addEventListener('click', showTransferForm);
-    
-    // Transfer Form Elements
-    const transferForm = document.getElementById('transfer-form');
-    const destinationSelect = document.getElementById('destination');
-    const transferMethodSelect = document.getElementById('transfer-method');
-    const receiverDetails = document.getElementById('receiver-details');
-    const amountInput = document.getElementById('amount');
-    const feeDisplay = document.getElementById('fee');
-    const totalDisplay = document.getElementById('total');
-    const receiverAmountDisplay = document.getElementById('receiver-amount');
-    const receiverCurrencyDisplay = document.getElementById('receiver-currency');
-    const ratesDisplay = document.getElementById('rates-display');
-    
-    // Payment Elements
-    const confirmPaymentBtn = document.getElementById('confirm-payment');
-    
-    // Admin Elements
-    const loginBtn = document.getElementById('login-btn');
-    const ratesForm = document.getElementById('rates-form');
-    const statusFilter = document.getElementById('status-filter');
-    const exportBtn = document.getElementById('export-btn');
-    const transactionsList = document.getElementById('transactions-list');
-    
-    // Exchange Rates (initial values)
-    let exchangeRates = {
-        Rwanda: 3600,
-        Uganda: 900,
-        Tanzania: 6200,
-        Burundi: 500,
-        DRC: 2.3,
-        Kenya: 300.44
-    };
-    
-    // Transactions Data
-    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-    
-    // Admin Credentials (in a real app, this would be server-side)
-    const adminCredentials = {
-        username: 'admin',
-        password: 'admin123'
-    };
-    
-    // Initialize the app
-    function init() {
-        showHome();
-        displayRates();
-        loadTransactions();
-        
-        // Load rates from localStorage if available
-        const savedRates = JSON.parse(localStorage.getItem('exchangeRates'));
+    loadData();
+    showHome();
+});
+
+// Load data from localStorage
+function loadData() {
+    try {
+        const savedRates = localStorage.getItem('exchangeRates');
         if (savedRates) {
-            exchangeRates = savedRates;
-            displayRates();
+            exchangeRates = JSON.parse(savedRates);
+            updateRatesDisplay();
         }
-    }
-    
-    // Navigation Functions
-    function showHome() {
-        hideAllSections();
-        homeSection.classList.remove('hidden');
-    }
-    
-    function showTransferForm() {
-        hideAllSections();
-        transferSection.classList.remove('hidden');
-        // Reset form
-        transferForm.reset();
-        receiverDetails.innerHTML = '';
-        updateCalculations();
-    }
-    
-    function showPaymentInstructions() {
-        hideAllSections();
-        paymentSection.classList.remove('hidden');
-    }
-    
-    function showConfirmation() {
-        hideAllSections();
-        confirmationSection.classList.remove('hidden');
-    }
-    
-    function showAdminLogin() {
-        hideAllSections();
-        adminSection.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        loginForm.classList.remove('hidden');
-    }
-    
-    function showAdminPanel() {
-        loginForm.classList.add('hidden');
-        adminPanel.classList.remove('hidden');
-        loadTransactions();
-    }
-    
-    function hideAllSections() {
-        homeSection.classList.add('hidden');
-        transferSection.classList.add('hidden');
-        paymentSection.classList.add('hidden');
-        confirmationSection.classList.add('hidden');
-        adminSection.classList.add('hidden');
-    }
-    
-    // Display Exchange Rates
-    function displayRates() {
-        ratesDisplay.innerHTML = '';
-        
-        for (const country in exchangeRates) {
-            const rateItem = document.createElement('div');
-            rateItem.className = 'rate-item';
-            
-            const countrySpan = document.createElement('span');
-            countrySpan.className = 'country';
-            countrySpan.textContent = `${country} ${getCountryFlag(country)}`;
-            
-            const rateSpan = document.createElement('span');
-            rateSpan.className = 'rate';
-            rateSpan.textContent = `1 RIAL = ${exchangeRates[country]} ${getCurrencyCode(country)}`;
-            
-            rateItem.appendChild(countrySpan);
-            rateItem.appendChild(document.createElement('br'));
-            rateItem.appendChild(rateSpan);
-            
-            ratesDisplay.appendChild(rateItem);
-        }
-    }
-    
-    function getCurrencyCode(country) {
-        switch(country) {
-            case 'Rwanda': return 'RWF';
-            case 'Uganda': return 'UGX';
-            case 'Tanzania': return 'TZS';
-            case 'Burundi': return 'BIF';
-            case 'DRC': return 'USD';
-            case 'Kenya': return 'KES';
-            default: return '';
-        }
-    }
-    
-    function getCountryFlag(country) {
-        const flags = {
-            'Rwanda': '🇷🇼',
-            'Uganda': '🇺🇬',
-            'Tanzania': '🇹🇿',
-            'Burundi': '🇧🇮',
-            'DRC': '🇨🇩',
-            'Kenya': '🇰🇪'
-        };
-        return flags[country] || '';
-    }
-    
-    // Handle Transfer Method Selection
-    transferMethodSelect.addEventListener('change', function() {
-        const method = this.value;
-        receiverDetails.innerHTML = '';
-        
-        if (method === 'mobile') {
-            receiverDetails.innerHTML = `
-                <div class="input-group">
-                    <label for="receiver-name">Receiver Full Name</label>
-                    <input type="text" id="receiver-name" required>
-                </div>
-                <div class="input-group">
-                    <label for="receiver-phone">Receiver Contact Number</label>
-                    <input type="tel" id="receiver-phone" required>
-                </div>
-            `;
-        } else if (method === 'bank') {
-            receiverDetails.innerHTML = `
-                <div class="input-group">
-                    <label for="bank-name">Bank Name</label>
-                    <input type="text" id="bank-name" required>
-                </div>
-                <div class="input-group">
-                    <label for="account-name">Account Holder Name</label>
-                    <input type="text" id="account-name" required>
-                </div>
-                <div class="input-group">
-                    <label for="account-number">Account Number</label>
-                    <input type="text" id="account-number" required>
-                </div>
-            `;
-        }
-    });
-    
-    // Handle Destination Selection
-    destinationSelect.addEventListener('change', updateCalculations);
-    amountInput.addEventListener('input', updateCalculations);
-    
-    function updateCalculations() {
-        const destination = destinationSelect.value;
-        const amount = parseFloat(amountInput.value) || 0;
-        const fee = 2; // Fixed fee
-        
-        if (destination && amount > 0) {
-            const rate = exchangeRates[destination];
-            const total = amount + fee;
-            const receiverAmount = amount * rate;
-            
-            totalDisplay.textContent = total.toFixed(2);
-            receiverAmountDisplay.textContent = receiverAmount.toFixed(2);
-            receiverCurrencyDisplay.textContent = getCurrencyCode(destination);
-        } else {
-            totalDisplay.textContent = '0';
-            receiverAmountDisplay.textContent = '0';
-            receiverCurrencyDisplay.textContent = '';
-        }
-    }
-    
-    // Handle Transfer Form Submission
-    transferForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const destination = destinationSelect.value;
-        const amount = parseFloat(amountInput.value);
-        const fee = 2;
-        const total = amount + fee;
-        const receiverAmount = amount * exchangeRates[destination];
-        
-        // In a real app, you would send this data to your server
-        const transferData = {
-            id: Date.now(),
-            senderName: document.getElementById('sender-name').value,
-            senderPhone: document.getElementById('sender-phone').value,
-            destination: destination,
-            amount: amount,
-            fee: fee,
-            total: total,
-            receiverAmount: receiverAmount,
-            currency: getCurrencyCode(destination),
-            method: transferMethodSelect.value,
-            receiverDetails: getReceiverDetails(),
-            status: 'pending',
-            date: new Date().toISOString()
-        };
-        
-        // Save to transactions array
-        transactions.push(transferData);
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        
-        showPaymentInstructions();
-    });
-    
-    function getReceiverDetails() {
-        const method = transferMethodSelect.value;
-        
-        if (method === 'mobile') {
-            return {
-                name: document.getElementById('receiver-name').value,
-                phone: document.getElementById('receiver-phone').value
-            };
-        } else {
-            return {
-                bankName: document.getElementById('bank-name').value,
-                accountName: document.getElementById('account-name').value,
-                accountNumber: document.getElementById('account-number').value
-            };
-        }
-    }
-    
-    // Handle Payment Confirmation
-    confirmPaymentBtn.addEventListener('click', function() {
-        // Get the latest transaction (the one just created)
-        const latestTransaction = transactions[transactions.length - 1];
-        
-        // Send WhatsApp notification with all details
-        sendWhatsAppNotification(latestTransaction);
-        
-        showConfirmation();
-    });
-    
-    function sendWhatsAppNotification(transaction) {
-        // Format the WhatsApp message with all required details
-        const message = `💰 *NEW MONEY TRANSFER ORDER* 💰
-        
-📌 *SENDER DETAILS:*
-   👤 Name: ${transaction.senderName}
-   📞 Contact: ${transaction.senderPhone}
 
-📌 *RECEIVER DETAILS:*
-   👤 Name: ${transaction.method === 'mobile' ? 
-            transaction.receiverDetails.name : 
-            transaction.receiverDetails.accountName}
-   📞 Contact: ${transaction.method === 'mobile' ? 
-              transaction.receiverDetails.phone : 
-              transaction.receiverDetails.accountNumber}
-   ${transaction.method === 'bank' ? 
-     `🏦 Bank: ${transaction.receiverDetails.bankName}` : 
-     ''}
-
-📌 *TRANSACTION DETAILS:*
-   💵 Amount Sent: ${transaction.amount} RIAL
-   💰 Fee: ${transaction.fee} RIAL
-   🔢 Total: ${transaction.total} RIAL
-   💸 Receiver Gets: ${transaction.receiverAmount} ${transaction.currency}
-   🌍 Destination: ${transaction.destination} ${getCountryFlag(transaction.destination)}
-   🔧 Method: ${transaction.method === 'mobile' ? 'Mobile Money' : 'Bank Transfer'}
-   📅 Date: ${new Date(transaction.date).toLocaleString()}
-
-📌 *TRANSACTION ID:* ${transaction.id}
-
-⚠️ *PLEASE PROCESS THIS TRANSACTION* ⚠️`;
-
-        // Encode the message for URL
-        const encodedMessage = encodeURIComponent(message);
-        
-        // Create WhatsApp link
-        const whatsappUrl = `https://wa.me/96878440900?text=${encodedMessage}`;
-        
-        // Open in new tab
-        window.open(whatsappUrl, '_blank');
-    }
-    
-    // Admin Functions
-    loginBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        if (username === adminCredentials.username && password === adminCredentials.password) {
-            showAdminPanel();
-            
-            // Populate rates form with current values
-            document.getElementById('rwanda-rate').value = exchangeRates.Rwanda;
-            document.getElementById('uganda-rate').value = exchangeRates.Uganda;
-            document.getElementById('tanzania-rate').value = exchangeRates.Tanzania;
-            document.getElementById('burundi-rate').value = exchangeRates.Burundi;
-            document.getElementById('drc-rate').value = exchangeRates.DRC;
-            document.getElementById('kenya-rate').value = exchangeRates.Kenya;
-        } else {
-            alert('Invalid credentials. Please try again.');
+        const savedTransactions = localStorage.getItem('transactions');
+        if (savedTransactions) {
+            transactions = JSON.parse(savedTransactions);
+            updateTransactionsList();
         }
-    });
-    
-    ratesForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Update exchange rates
-        exchangeRates.Rwanda = parseFloat(document.getElementById('rwanda-rate').value);
-        exchangeRates.Uganda = parseFloat(document.getElementById('uganda-rate').value);
-        exchangeRates.Tanzania = parseFloat(document.getElementById('tanzania-rate').value);
-        exchangeRates.Burundi = parseFloat(document.getElementById('burundi-rate').value);
-        exchangeRates.DRC = parseFloat(document.getElementById('drc-rate').value);
-        exchangeRates.Kenya = parseFloat(document.getElementById('kenya-rate').value);
-        
-        // Save to localStorage
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+// Save data to localStorage
+function saveData() {
+    try {
         localStorage.setItem('exchangeRates', JSON.stringify(exchangeRates));
-        
-        // Update display
-        displayRates();
-        
-        alert('Exchange rates updated successfully!');
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+    } catch (error) {
+        console.error('Error saving data:', error);
+    }
+}
+
+// Navigation functions
+function showHome() {
+    hideAllSections();
+    document.getElementById('homePage').style.display = 'block';
+}
+
+function showTransferForm() {
+    hideAllSections();
+    document.getElementById('transferForm').classList.add('active');
+}
+
+function showAdmin() {
+    hideAllSections();
+    document.getElementById('adminPanel').classList.add('active');
+    loadAdminRates();
+}
+
+function hideAllSections() {
+    document.getElementById('homePage').style.display = 'none';
+    document.getElementById('transferForm').classList.remove('active');
+    document.getElementById('adminPanel').classList.remove('active');
+}
+
+// Toggle receiver fields based on payment method
+function toggleReceiverFields() {
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const simCardFields = document.getElementById('simCardFields');
+    const bankFields = document.getElementById('bankFields');
+
+    // Hide both first
+    simCardFields.classList.add('hidden');
+    bankFields.classList.add('hidden');
+
+    // Clear required attributes
+    clearRequiredFields();
+
+    if (paymentMethod === 'simcard') {
+        simCardFields.classList.remove('hidden');
+        document.getElementById('receiverName').required = true;
+        document.getElementById('receiverContact').required = true;
+    } else if (paymentMethod === 'bank') {
+        bankFields.classList.remove('hidden');
+        document.getElementById('bankName').required = true;
+        document.getElementById('bankHolderName').required = true;
+        document.getElementById('bankAccountNumber').required = true;
+    }
+}
+
+function clearRequiredFields() {
+    const fields = ['receiverName', 'receiverContact', 'bankName', 'bankHolderName', 'bankAccountNumber'];
+    fields.forEach(fieldId => {
+        document.getElementById(fieldId).required = false;
     });
+}
+
+// Update calculation based on amount and country
+function updateCalculation() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const country = document.getElementById('country').value;
+    const resultDiv = document.getElementById('calculationResult');
+    const receiveAmountSpan = document.getElementById('receiveAmount');
+    const totalAmountSpan = document.getElementById('totalAmount');
+
+    if (amount > 0 && country && exchangeRates[country]) {
+        const rate = exchangeRates[country];
+        const receiveAmount = amount * rate;
+        const serviceFee = 2;
+        const totalToPay = amount + serviceFee;
+
+        receiveAmountSpan.textContent = `Receiver will get: ${receiveAmount.toLocaleString()} ${currencyCodes[country]}`;
+        totalAmountSpan.textContent = totalToPay.toFixed(2);
+        resultDiv.classList.remove('hidden');
+    } else {
+        resultDiv.classList.add('hidden');
+    }
+}
+
+// Submit transfer form
+function submitTransfer(event) {
+    event.preventDefault();
     
-    statusFilter.addEventListener('change', loadTransactions);
-    
-    function loadTransactions() {
-        const status = statusFilter.value;
-        let filteredTransactions = [...transactions].reverse(); // Show newest first
+    try {
+        const formData = new FormData(event.target);
+        const transferData = Object.fromEntries(formData);
         
-        if (status !== 'all') {
-            filteredTransactions = filteredTransactions.filter(t => t.status === status);
-        }
-        
-        transactionsList.innerHTML = '';
-        
-        if (filteredTransactions.length === 0) {
-            transactionsList.innerHTML = '<tr><td colspan="6" style="text-align: center;">No transactions found</td></tr>';
+        // Validate required fields
+        if (!validateTransferForm(transferData)) {
             return;
         }
         
-        filteredTransactions.forEach(transaction => {
-            const tr = document.createElement('tr');
-            
-            tr.innerHTML = `
-                <td>${transaction.id}</td>
-                <td>${transaction.senderName}</td>
-                <td>${transaction.amount} RIAL</td>
-                <td>${transaction.destination}</td>
-                <td class="status-${transaction.status}">${transaction.status}</td>
-                <td>
-                    ${transaction.status === 'pending' ? 
-                        `<button class="action-btn complete-btn" data-id="${transaction.id}">Complete</button>` : 
-                        ''}
-                    <button class="action-btn details-btn" data-id="${transaction.id}">Details</button>
-                </td>
-            `;
-            
-            transactionsList.appendChild(tr);
-        });
+        // Add calculation data
+        const amount = parseFloat(transferData.amount);
+        const rate = exchangeRates[transferData.country];
+        const receiveAmount = amount * rate;
+        const totalAmount = amount + 2;
         
-        // Add event listeners to buttons
-        document.querySelectorAll('.complete-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                completeTransaction(id);
-            });
-        });
+        transferData.receiveAmount = receiveAmount;
+        transferData.serviceFee = 2;
+        transferData.totalAmount = totalAmount;
+        transferData.rate = rate;
+        transferData.currency = currencyCodes[transferData.country];
+        transferData.timestamp = new Date().toISOString();
+        transferData.id = Date.now().toString();
+
+        // Add to transactions
+        transactions.unshift(transferData);
+        saveData();
+
+        // Send WhatsApp message
+        sendWhatsAppMessage(transferData);
+
+        // Show success message
+        showSuccessMessage('Transfer request submitted successfully! We will process your transfer immediately after payment confirmation.');
         
-        document.querySelectorAll('.details-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                showTransactionDetails(id);
-            });
-        });
+        // Reset form
+        resetTransferForm(event.target);
+        
+        // Go back to home after delay
+        setTimeout(() => {
+            showHome();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error submitting transfer:', error);
+        showErrorMessage('An error occurred while submitting your transfer. Please try again.');
     }
+}
+
+function validateTransferForm(data) {
+    if (!data.senderName || !data.senderContact || !data.country || !data.paymentMethod || !data.amount) {
+        showErrorMessage('Please fill in all required fields.');
+        return false;
+    }
+
+    if (parseFloat(data.amount) < 1) {
+        showErrorMessage('Amount must be at least 1 OMR.');
+        return false;
+    }
+
+    if (data.paymentMethod === 'simcard' && (!data.receiverName || !data.receiverContact)) {
+        showErrorMessage('Please fill in receiver details for mobile money transfer.');
+        return false;
+    }
+
+    if (data.paymentMethod === 'bank' && (!data.bankName || !data.bankHolderName || !data.bankAccountNumber)) {
+        showErrorMessage('Please fill in all bank details for bank transfer.');
+        return false;
+    }
+
+    return true;
+}
+
+function resetTransferForm(form) {
+    form.reset();
+    document.getElementById('calculationResult').classList.add('hidden');
+    document.getElementById('simCardFields').classList.add('hidden');
+    document.getElementById('bankFields').classList.add('hidden');
+    clearRequiredFields();
+}
+
+function showSuccessMessage(message) {
+    const existingMessage = document.querySelector('.success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'success-message';
+    messageDiv.textContent = message;
     
-    function completeTransaction(id) {
-        const transaction = transactions.find(t => t.id === id);
-        if (transaction) {
-            transaction.status = 'completed';
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            loadTransactions();
+    const form = document.getElementById('transferForm');
+    form.insertBefore(messageDiv, form.firstChild);
+}
+
+function showErrorMessage(message) {
+    const existingMessage = document.querySelector('.error-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.textContent = message;
+    
+    const form = document.getElementById('transferForm');
+    form.insertBefore(messageDiv, form.firstChild);
+}
+
+// Send WhatsApp message
+function sendWhatsAppMessage(data) {
+    const phoneNumber = '96878440900';
+    
+    let receiverDetails = '';
+    if (data.paymentMethod === 'simcard') {
+        receiverDetails = `Receiver: ${data.receiverName}\nReceiver Contact: ${data.receiverContact}`;
+    } else {
+        receiverDetails = `Bank: ${data.bankName}\nAccount Holder: ${data.bankHolderName}\nAccount Number: ${data.bankAccountNumber}`;
+    }
+
+    const message = `*NEW MONEY TRANSFER REQUEST*
+
+*Sender Details:*
+Name: ${data.senderName}
+Contact: ${data.senderContact}
+
+*Transfer Details:*
+Amount Sent: ${data.amount} OMR
+Destination: ${data.country.toUpperCase()}
+Exchange Rate: 1 OMR = ${data.rate} ${data.currency}
+Receiver Gets: ${data.receiveAmount.toLocaleString()} ${data.currency}
+Service Fee: ${data.serviceFee} OMR
+Total to Pay: ${data.totalAmount} OMR
+
+*${data.paymentMethod === 'simcard' ? 'Mobile Money' : 'Bank Transfer'} Details:*
+${receiverDetails}
+
+*Payment Method:* ${data.paymentMethod.toUpperCase()}
+*Transaction ID:* ${data.id}
+*Time:* ${new Date(data.timestamp).toLocaleString()}
+
+Please send payment to: 0204060924001`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// Admin functions
+function adminLogin() {
+    const password = document.getElementById('adminPassword').value;
+    if (password === ADMIN_PASSWORD) {
+        document.getElementById('adminLogin').style.display = 'none';
+        document.getElementById('adminContent').classList.add('active');
+        loadAdminRates();
+        updateTransactionsList();
+    } else {
+        alert('Incorrect password!');
+        document.getElementById('adminPassword').value = '';
+    }
+}
+
+function adminLogout() {
+    document.getElementById('adminLogin').style.display = 'block';
+    document.getElementById('adminContent').classList.remove('active');
+    document.getElementById('adminPassword').value = '';
+}
+
+function loadAdminRates() {
+    document.getElementById('adminRateRwanda').value = exchangeRates.rwanda;
+    document.getElementById('adminRateUganda').value = exchangeRates.uganda;
+    document.getElementById('adminRateTanzania').value = exchangeRates.tanzania;
+    document.getElementById('adminRateBurundi').value = exchangeRates.burundi;
+    document.getElementById('adminRateDrc').value = exchangeRates.drc;
+    document.getElementById('adminRateKenya').value = exchangeRates.kenya;
+}
+
+function updateRates() {
+    try {
+        const newRates = {
+            rwanda: parseFloat(document.getElementById('adminRateRwanda').value) || exchangeRates.rwanda,
+            uganda: parseFloat(document.getElementById('adminRateUganda').value) || exchangeRates.uganda,
+            tanzania: parseFloat(document.getElementById('adminRateTanzania').value) || exchangeRates.tanzania,
+            burundi: parseFloat(document.getElementById('adminRateBurundi').value) || exchangeRates.burundi,
+            drc: parseFloat(document.getElementById('adminRateDrc').value) || exchangeRates.drc,
+            kenya: parseFloat(document.getElementById('adminRateKenya').value) || exchangeRates.kenya
+        };
+
+        // Validate rates
+        for (const [country, rate] of Object.entries(newRates)) {
+            if (rate <= 0 || isNaN(rate)) {
+                alert(`Invalid rate for ${country}. Please enter a positive number.`);
+                return;
+            }
         }
+
+        exchangeRates = newRates;
+        saveData();
+        updateRatesDisplay();
+        alert('Exchange rates updated successfully!');
+    } catch (error) {
+        console.error('Error updating rates:', error);
+        alert('Error updating rates. Please try again.');
     }
+}
+
+function updateRatesDisplay() {
+    document.getElementById('rate-rwanda').textContent = exchangeRates.rwanda.toLocaleString();
+    document.getElementById('rate-uganda').textContent = exchangeRates.uganda.toLocaleString();
+    document.getElementById('rate-tanzania').textContent = exchangeRates.tanzania.toLocaleString();
+    document.getElementById('rate-burundi').textContent = exchangeRates.burundi.toLocaleString();
+    document.getElementById('rate-drc').textContent = exchangeRates.drc.toLocaleString();
+    document.getElementById('rate-kenya').textContent = exchangeRates.kenya.toLocaleString();
+}
+
+function updateTransactionsList() {
+    const transactionsList = document.getElementById('transactionsList');
     
-    function showTransactionDetails(id) {
-        const transaction = transactions.find(t => t.id === id);
-        if (!transaction) return;
-        
-        let details = `
-            <strong>Transaction ID:</strong> ${transaction.id}<br>
-            <strong>Date:</strong> ${new Date(transaction.date).toLocaleString()}<br>
-            <strong>Sender:</strong> ${transaction.senderName} (${transaction.senderPhone})<br>
-            <strong>Amount:</strong> ${transaction.amount} RIAL + ${transaction.fee} RIAL fee = ${transaction.total} RIAL total<br>
-            <strong>Receiver Gets:</strong> ${transaction.receiverAmount} ${transaction.currency}<br>
-            <strong>Destination:</strong> ${transaction.destination}<br>
-            <strong>Method:</strong> ${transaction.method === 'mobile' ? 'Mobile Money' : 'Bank Transfer'}<br>
-            <strong>Status:</strong> <span class="status-${transaction.status}">${transaction.status}</span><br><br>
-        `;
-        
-        if (transaction.method === 'mobile') {
-            details += `
-                <strong>Receiver Details:</strong><br>
-                Name: ${transaction.receiverDetails.name}<br>
-                Phone: ${transaction.receiverDetails.phone}
-            `;
-        } else {
-            details += `
-                <strong>Receiver Bank Details:</strong><br>
-                Bank: ${transaction.receiverDetails.bankName}<br>
-                Account Name: ${transaction.receiverDetails.accountName}<br>
-                Account Number: ${transaction.receiverDetails.accountNumber}
-            `;
-        }
-        
-        alert(details);
+    if (transactions.length === 0) {
+        transactionsList.innerHTML = '<p>No transactions yet.</p>';
+        return;
     }
+
+    let html = '<table>';
+    html += '<tr><th>Date</th><th>Sender</th><th>Contact</th><th>Amount</th><th>Country</th><th>Method</th><th>Status</th></tr>';
     
-    exportBtn.addEventListener('click', function() {
-        // Convert transactions to CSV
-        let csv = 'ID,Date,Sender Name,Sender Phone,Amount (RIAL),Fee (RIAL),Total (RIAL),Destination,Receiver Amount,Currency,Method,Status\n';
+    transactions.slice(0, 20).forEach(transaction => {
+        const date = new Date(transaction.timestamp).toLocaleDateString();
+        const time = new Date(transaction.timestamp).toLocaleTimeString();
         
-        transactions.forEach(t => {
-            csv += `${t.id},"${new Date(t.date).toLocaleString()}","${t.senderName}","${t.senderPhone}",${t.amount},${t.fee},${t.total},"${t.destination}",${t.receiverAmount},${t.currency},"${t.method === 'mobile' ? 'Mobile Money' : 'Bank Transfer'}","${t.status}"\n`;
-        });
-        
-        // Create download link
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('hidden', '');
-        a.setAttribute('href', url);
-        a.setAttribute('download', `transactions_${new Date().toISOString().slice(0, 10)}.csv`);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        html += `<tr>
+            <td>${date}<br><small>${time}</small></td>
+            <td>${transaction.senderName}</td>
+            <td>${transaction.senderContact}</td>
+            <td>${transaction.amount} OMR<br><small>Gets: ${transaction.receiveAmount.toLocaleString()} ${transaction.currency}</small></td>
+            <td>${transaction.country.toUpperCase()}</td>
+            <td>${transaction.paymentMethod.toUpperCase()}</td>
+            <td><span style="color: orange; font-weight: bold;">Pending</span></td>
+        </tr>`;
     });
     
-    // Initialize the app
-    init();
-}); 
+    html += '</table>';
+    transactionsList.innerHTML = html;
+}
+
+// Utility functions
+function formatCurrency(amount, currency) {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    }).format(amount) + ' ' + currency;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+// Auto-save form data as user types (for better UX)
+function autoSaveFormData() {
+    const form = document.getElementById('moneyTransferForm');
+    if (!form) return;
+
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            sessionStorage.setItem('transferFormData', JSON.stringify(data));
+        });
+    });
+}
+
+// Restore form data on page load
+function restoreFormData() {
+    const savedData = sessionStorage.getItem('transferFormData');
+    if (!savedData) return;
+
+    try {
+        const data = JSON.parse(savedData);
+        const form = document.getElementById('moneyTransferForm');
+        
+        for (const [key, value] of Object.entries(data)) {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input && value) {
+                input.value = value;
+            }
+        }
+        
+        // Trigger change events to update UI
+        if (data.paymentMethod) {
+            toggleReceiverFields();
+        }
+        if (data.amount && data.country) {
+            updateCalculation();
+        }
+    } catch (error) {
+        console.error('Error restoring form data:', error);
+    }
+}
+
+// Clear saved form data after successful submission
+function clearSavedFormData() {
+    sessionStorage.removeItem('transferFormData');
+}
+
+// Enhanced form validation
+function validatePhoneNumber(phone) {
+    // Basic phone number validation (adjust regex as needed)
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
+    return phoneRegex.test(phone);
+}
+
+function validateAmount(amount) {
+    const num = parseFloat(amount);
+    return !isNaN(num) && num > 0 && num <= 10000; // Max limit of 10,000 OMR
+}
+
+// Add event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize auto-save
+    setTimeout(autoSaveFormData, 1000);
+    
+    // Restore form data
+    setTimeout(restoreFormData, 500);
+    
+    // Add enter key support for admin login
+    const adminPasswordInput = document.getElementById('adminPassword');
+    if (adminPasswordInput) {
+        adminPasswordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
+            }
+        });
+    }
+});
+
+// Export functions for testing (if needed)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        exchangeRates,
+        currencyCodes,
+        updateCalculation,
+        validatePhoneNumber,
+        validateAmount,
+        formatCurrency
+    };
+}
