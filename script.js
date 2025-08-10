@@ -485,4 +485,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the app
     init();
-});
+}); 
