@@ -3,217 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fast & Secure Money Transfers - Oman to East Africa</title>
-   <link rel="stylesheet" href="styles.css">
-<script src="script.js"></script>
+    <title>Fast & Secure Money Transfers – Oman to East Africa</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Navigation -->
-        <div class="nav">
-            <button class="btn-secondary" onclick="showHome()">Home</button>
-            <button class="btn-secondary" onclick="showAdmin()">Admin Panel</button>
-        </div>
-
-        <!-- Home Page -->
-        <div id="homePage">
-            <div class="header">
-                <h1>Fast & Secure Money Transfers</h1>
-                <p>Welcome to our money transfer service. We guarantee speed, safety, and the best exchange rates. Send money to your loved ones instantly in Rwanda, Uganda, Tanzania, Burundi, DRC, and Kenya.</p>
-                <button class="btn-primary" onclick="showTransferForm()">Send Money Now</button>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">MoneyTransfers</a>
             </div>
-
-            <!-- Exchange Rates Display -->
-            <div class="rates-display">
-                <h3>Current Exchange Rates</h3>
-                <div class="rates-grid" id="ratesGrid">
-                    <div class="rate-item">
-                        <div class="country">Rwanda</div>
-                        <div class="rate">1 OMR = <span id="rate-rwanda">3600</span> RWF</div>
-                    </div>
-                    <div class="rate-item">
-                        <div class="country">Uganda</div>
-                        <div class="rate">1 OMR = <span id="rate-uganda">900</span> UGX</div>
-                    </div>
-                    <div class="rate-item">
-                        <div class="country">Tanzania</div>
-                        <div class="rate">1 OMR = <span id="rate-tanzania">6200</span> TZS</div>
-                    </div>
-                    <div class="rate-item">
-                        <div class="country">Burundi</div>
-                        <div class="rate">1 OMR = <span id="rate-burundi">500</span> BIF</div>
-                    </div>
-                    <div class="rate-item">
-                        <div class="country">DRC</div>
-                        <div class="rate">1 OMR = <span id="rate-drc">5000</span> CDF</div>
-                    </div>
-                    <div class="rate-item">
-                        <div class="country">Kenya</div>
-                        <div class="rate">1 OMR = <span id="rate-kenya">350</span> KES</div>
-                    </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="blog.html" class="nav-link">Blog</a>
+                <a href="faq.html" class="nav-link">FAQ</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+                <a href="privacy.html" class="nav-link">Privacy Policy</a>
+                <a href="terms.html" class="nav-link">Terms</a>
+                <div class="language-selector">
+                    <select id="language-select">
+                        <option value="en">English</option>
+                        <option value="ar">Arabic</option>
+                        <option value="rw">Kinyarwanda</option>
+                    </select>
                 </div>
             </div>
+            <div class="hamburger" id="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
         </div>
+    </nav>
 
-        <!-- Transfer Form -->
-        <div id="transferForm" class="form-container">
-            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Money Transfer Form</h2>
-            
-            <form id="moneyTransferForm" onsubmit="submitTransfer(event)">
-                <div class="form-grid">
-                    <!-- Sender Details -->
-                    <div class="form-section">
-                        <h3>Sender Details</h3>
-                        <div class="form-group">
-                            <label for="senderName">Full Name *</label>
-                            <input type="text" id="senderName" name="senderName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="senderContact">Contact Number *</label>
-                            <input type="tel" id="senderContact" name="senderContact" required>
-                        </div>
-                    </div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Send Money from Oman to Rwanda & East Africa Fast & Securely</h1>
+            <p>Compare the best money transfer providers to send money from Oman to East Africa quickly, securely, and at the best rates.</p>
+            <a href="#providers" class="btn-primary">Send Now</a>
+        </div>
+    </section>
 
-                    <!-- Transfer Details -->
-                    <div class="form-section">
-                        <h3>Transfer Details</h3>
-                        <div class="form-group">
-                            <label for="country">Destination Country *</label>
-                            <select id="country" name="country" required onchange="updateCalculation()">
-                                <option value="">Select Country</option>
-                                <option value="rwanda">Rwanda</option>
-                                <option value="uganda">Uganda</option>
-                                <option value="tanzania">Tanzania</option>
-                                <option value="burundi">Burundi</option>
-                                <option value="drc">DRC</option>
-                                <option value="kenya">Kenya</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="paymentMethod">Payment Method *</label>
-                            <select id="paymentMethod" name="paymentMethod" required onchange="toggleReceiverFields()">
-                                <option value="">Select Payment Method</option>
-                                <option value="simcard"sim card</option>
-                                <option value="bank">Bank Transfer</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="amount">Amount to Send (OMR) *</label>
-                            <input type="number" id="amount" name="amount" step="0.01" min="1" required onkeyup="updateCalculation()" onchange="updateCalculation()">
-                        </div>
-                        <div id="calculationResult" class="amount-result hidden">
-                            <div class="receive-amount" id="receiveAmount">Receiver will get: 0</div>
-                            <div class="fee-info">Service Fee: 2 OMR | Total to Pay: <span id="totalAmount">0</span> OMR</div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Exchange Rate Widget -->
+    <section class="exchange-rate">
+        <div class="container">
+            <div class="rate-widget">
+                <h3>Today's Exchange Rate</h3>
+                <p>1 OMR = <span id="rate-value">3,750</span> RWF</p>
+                <small>Rates update daily - actual rates may vary by provider</small>
+            </div>
+        </div>
+    </section>
 
-                <!-- Receiver Details -->
-                <div class="form-section">
-                    <h3>Receiver Details</h3>
-                    
-                    <!-- Sim Card Fields -->
-                    <div id="simCardFields" class="hidden">
-                        <div class="form-group">
-                            <label for="receiverName">Receiver Name *</label>
-                            <input type="text" id="receiverName" name="receiverName">
-                        </div>
-                        <div class="form-group">
-                            <label for="receiverContact">Receiver Contact Number *</label>
-                            <input type="tel" id="receiverContact" name="receiverContact">
-                        </div>
-                    </div>
+    <!-- Providers Section -->
+    <section class="providers" id="providers">
+        <div class="container">
+            <h2>Trusted Money Transfer Providers</h2>
+            <div class="provider-buttons">
+                <a href="#" class="provider-btn">Send with Ria</a>
+                <a href="#" class="provider-btn">Send with Remitly</a>
+                <a href="#" class="provider-btn">Send with WorldRemit</a>
+                <a href="#" class="provider-btn">Send with Wise</a>
+                <a href="#" class="provider-btn">Send with MoneyGram</a>
+            </div>
+        </div>
+    </section>
 
-                    <!-- Bank Fields -->
-                    <div id="bankFields" class="hidden">
-                        <div class="form-group">
-                            <label for="bankName">Bank Name *</label>
-                            <input type="text" id="bankName" name="bankName">
-                        </div>
-                        <div class="form-group">
-                            <label for="bankHolderName">Bank Holder Name *</label>
-                            <input type="text" id="bankHolderName" name="bankHolderName">
-                        </div>
-                        <div class="form-group">
-                            <label for="bankAccountNumber">Bank Account Number *</label>
-                            <input type="text" id="bankAccountNumber" name="bankAccountNumber">
-                        </div>
-                    </div>
-                </div>
+    <!-- Comparison Table -->
+    <section class="comparison">
+        <div class="container">
+            <h2>Compare Money Transfer Services</h2>
+            <div class="table-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Exchange Rate</th>
+                            <th>Fee</th>
+                            <th>Delivery Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ria</td>
+                            <td>1 OMR = 3,750 RWF</td>
+                            <td>2 OMR</td>
+                            <td>Minutes</td>
+                            <td><a href="#" class="btn-table">Send →</a></td>
+                        </tr>
+                        <tr>
+                            <td>Remitly</td>
+                            <td>1 OMR = 3,740 RWF</td>
+                            <td>1.5 OMR</td>
+                            <td>Minutes</td>
+                            <td><a href="#" class="btn-table">Send →</a></td>
+                        </tr>
+                        <tr>
+                            <td>WorldRemit</td>
+                            <td>1 OMR = 3,745 RWF</td>
+                            <td>1.8 OMR</td>
+                            <td>Hours</td>
+                            <td><a href="#" class="btn-table">Send →</a></td>
+                        </tr>
+                        <tr>
+                            <td>Wise</td>
+                            <td>1 OMR = 3,755 RWF</td>
+                            <td>1.2 OMR</td>
+                            <td>1-2 Days</td>
+                            <td><a href="#" class="btn-table">Send →</a></td>
+                        </tr>
+                        <tr>
+                            <td>MoneyGram</td>
+                            <td>1 OMR = 3,735 RWF</td>
+                            <td>2.5 OMR</td>
+                            <td>Minutes</td>
+                            <td><a href="#" class="btn-table">Send →</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
-                <!-- Payment Instructions -->
-                <div class="payment-info">
-                    <h4>Payment Instructions</h4>
-                    <p>Please transfer the total amount to our account:</p>
-                    <div class="account-number">0204060924001</div>
-                    <p>Once your payment is confirmed, we will process your transfer immediately, and the funds will reach the destination within 2–3 hours.</p>
-                </div>
+    <!-- Blog Preview -->
+    <section class="blog-preview">
+        <div class="container">
+            <h2>Latest from Our Blog</h2>
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <h3>Best Way to Send Money from Oman to Rwanda</h3>
+                    <p>Discover the most efficient and cost-effective methods to send money from Oman to Rwanda.</p>
+                    <a href="blog.html#post1" class="read-more">Read More</a>
+                </article>
+                <article class="blog-card">
+                    <h3>How to Save on Remittance Fees</h3>
+                    <p>Learn practical tips to reduce transfer fees and get more value for your money.</p>
+                    <a href="blog.html#post2" class="read-more">Read More</a>
+                </article>
+            </div>
+        </div>
+    </section>
 
-                <div style="text-align: center;">
-                    <button type="submit" class="btn-primary">Submit Transfer Request</button>
-                </div>
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <h2>Stay Updated with the Best Rates</h2>
+            <p>Subscribe for daily Oman→Rwanda exchange rates and money transfer tips</p>
+            <form class="newsletter-form">
+                <input type="email" placeholder="Enter your email address" required>
+                <button type="submit">Subscribe</button>
             </form>
         </div>
+    </section>
 
-        <!-- Admin Panel -->
-        <div id="adminPanel" class="admin-panel">
-            <div id="adminLogin" class="admin-login">
-                <h2>Admin Login</h2>
-                <div class="form-group">
-                    <label for="adminPassword">Password</label>
-                    <input type="password" id="adminPassword" placeholder="Enter admin password">
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MoneyTransfers</h3>
+                    <p>Fast & Secure Money Transfers from Oman to East Africa</p>
                 </div>
-                <button class="btn-primary" onclick="adminLogin()">Login</button>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect With Us</h4>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon">FB</a>
+                        <a href="#" class="social-icon">TW</a>
+                        <a href="#" class="social-icon">IG</a>
+                    </div>
+                </div>
             </div>
-
-            <div id="adminContent" class="admin-content">
-                <h2>Admin Dashboard</h2>
-                
-                <!-- Exchange Rates Management -->
-                <div class="form-section">
-                    <h3>Update Exchange Rates</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="adminRateRwanda">Rwanda (RWF)</label>
-                            <input type="number" id="adminRateRwanda" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="adminRateUganda">Uganda (UGX)</label>
-                            <input type="number" id="adminRateUganda" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="adminRateTanzania">Tanzania (TZS)</label>
-                            <input type="number" id="adminRateTanzania" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="adminRateBurundi">Burundi (BIF)</label>
-                            <input type="number" id="adminRateBurundi" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="adminRateDrc">DRC (CDF)</label>
-                            <input type="number" id="adminRateDrc" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="adminRateKenya">Kenya (KES)</label>
-                            <input type="number" id="adminRateKenya" step="0.01">
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="updateRates()">Update All Rates</button>
-                </div>
-
-                <!-- Transactions Log -->
-                <div class="form-section">
-                    <h3>Recent Transactions</h3>
-                    <div id="transactionsList">
-                        <p>No transactions yet.</p>
-                    </div>
-                </div>
-
-                <button class="btn-secondary" onclick="adminLogout()">Logout</button>
+            <div class="footer-bottom">
+                <p>&copy; 2023 MoneyTransfers. All rights reserved.</p>
             </div>
         </div>
-    </div>
+    </footer>
 
     <script src="script.js"></script>
+    <!-- Insert Google Analytics or Plausible here. -->
 </body>
 </html>
